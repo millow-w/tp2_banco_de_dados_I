@@ -1,0 +1,1 @@
+# Se a interface for com Tkinter
