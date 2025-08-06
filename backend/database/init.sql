@@ -2,15 +2,14 @@
 Script de criação do esquema relacional
 */
 
--- #############################################################################
--- # Entidade Pessoa
--- #############################################################################
 
+-- Entidade Pessoa
 CREATE TABLE Pessoa (
     CPF VARCHAR(11) PRIMARY KEY,
     Nome VARCHAR(255) NOT NULL,
 );
 
+-- Atributo Telefones Multivalorado de Pessoa
 CREATE TABLE ContatoTelefones (
     CPF VARCHAR(11) NOT NULL,
     Telefone VARCHAR(20) NOT NULL,
@@ -18,6 +17,7 @@ CREATE TABLE ContatoTelefones (
     FOREIGN KEY (CPF) REFERENCES Pessoa(CPF) ON DELETE CASCADE
 );
 
+-- Atributo Emails Multivalorado de Pessoa
 CREATE TABLE ContatoEmails (
     CPF VARCHAR(11) NOT NULL,
     Email VARCHAR(100) NOT NULL,
@@ -25,20 +25,14 @@ CREATE TABLE ContatoEmails (
     FOREIGN KEY (CPF) REFERENCES Pessoa(CPF) ON DELETE CASCADE
 );
 
--- #############################################################################
--- # Entidade PessoaLGBT
--- #############################################################################
-
+-- Entidade PessoaLGBT
 CREATE TABLE PessoaLGBT (
     CPF VARCHAR(11) PRIMARY KEY,
     NomeSocial VARCHAR(255) NOT NULL,
     FOREIGN KEY (CPF) REFERENCES Pessoa(CPF) ON DELETE CASCADE
 );
 
--- #############################################################################
--- # Entidade Servidor
--- #############################################################################
-
+-- Entidade Servidor
 CREATE TABLE Servidor (
     CPF VARCHAR(11) PRIMARY KEY,
     TipoDeContrato VARCHAR(100) NOT NULL,
@@ -47,12 +41,79 @@ CREATE TABLE Servidor (
     FOREIGN KEY (CodigoDepartamento) REFERENCES Departamento(Codigo) ON DELETE RESTRICT
 );
 
--- #############################################################################
--- # Entidade Aluno
--- #############################################################################
+-- Entidade Docente
+CREATE TABLE Docente (
+    CPF VARCHAR(11) PRIMARY KEY,
+    SIAPE VARCHAR(8) NOT NULL,
+    ID_PCD INT,
+    FOREIGN KEY (CPF) REFERENCES Servidor(CPF) ON DELETE RESTRICT,
+    FOREIGN KEY (ID_PCD) REFERENCES PCD(ID) ON DELETE RESTRICT
+);
 
+-- Entidade Técnico Administrativo
+CREATE TABLE TecnicoAdministrativo(
+    CPF VARCHAR(11) PRIMARY KEY,
+    SIAPE VARCHAR(8) NOT NULL UNIQUE,
+    ID_MEMBRO INT,
+    ID_PCD INT,
+    ID_CARGO INT,
+    FOREIGN KEY (CPF) REFERENCES Servidor(CPF) ON DELETE RESTRICT,
+    FOREIGN KEY (ID_MEMBRO) REFERENCES MembroDaEquipe(ID_MEMBRO) ON DELETE RESTRICT,
+    FOREIGN KEY (ID_PCD) REFERENCES PCD(ID_PCD) ON DELETE RESTRICT,
+    FOREIGN KEY (ID_CARGO) REFERENCES CARGO(ID_CARGO) ON DELETE RESTRICT,
+);
+
+-- Entidade Terceirizado
+CREATE TABLE Terceirizado(
+    CPF VARCHAR(11) PRIMARY KEY,
+    ID_MEMBRO INT,
+    ID_CARGO INT,
+    FOREIGN KEY (CPF) REFERENCES Servidor(CPF) ON DELETE RESTRICT,
+    FOREIGN KEY (ID_MEMBRO) REFERENCES MembroDaEquipe(ID_MEMBRO) ON DELETE RESTRICT,
+    FOREIGN KEY (ID_CARGO) REFERENCES Cargo(ID_CARGO) ON DELETE RESTRICT,
+);
+
+-- Entidade Aluno
 CREATE TABLE Aluno (
     CPF VARCHAR(11) PRIMARY KEY,
     Matricula VARCHAR(9) NOT NULL,
-    
+    ID_MEMBRO INT,
+    ID_PCD INT,
+    FOREIGN KEY (CPF) REFERENCES Pessoa(CPF) ON DELETE RESTRICT,
+    FOREIGN KEY (ID_MEMBRO) REFERENCES MembroDaEquipe(ID_MEMBRO) ON DELETE RESTRICT,
+    FOREIGN KEY (ID_PCD) REFERENCES PCD(ID_PCD) ON DELETE RESTRICT,
 );
+
+-- Entidade Membro da Equipe
+CREATE TABLE MembroDaEquipe(
+    ID_MEMBRO INT PRIMARY KEY AUTO_INCREMENT,
+    -- Categoria VARCHAR(100)
+    RegimeDeTrabalho VARCHAR(100) NOT NULL,
+    ID_COORDENADOR INT,
+    FOREIGN KEY (ID_COORDENADOR) REFERENCES MembroDaEquipe(ID_MEMBRO) ON DELETE RESTRICT,
+);
+
+-- Atributo Período de Vínculo Multivalorado de Membro da Equipe
+CREATE TABLE PeriodoDeVinculo(
+    DataDeInicio DATE NOT NULL,
+    DataDeFim DATE NOT NULL,
+    ID_MEMBRO INT NOT NULL,
+    FOREIGN KEY (ID_MEMBRO) REFERENCES MembroDaEquipe(ID_MEMBRO) ON DELETE RESTRICT,
+    CONSTRAINT ID_PERIODO PRIMARY KEY (ID_MEMBRO, DataDeInicio, DataDeFim),
+);
+
+-- Entidade Bolsista
+CREATE TABLE Bolsista(
+    ID_BOLSISTA INT PRIMARY KEY,
+    Salario MONEY NOT NULL,
+    FOREIGN KEY (ID_BOLSISTA) REFERENCES MembroDaEquipe(ID_MEMBRO) ON DELETE RESTRICT,
+    -- CHECK (Salario > 0) 
+);
+
+-- Entidade Bolsista de Produção
+CREATE TABLE BolsistaProducao(
+    ID_BOLSISTA INT PRIMARY KEY,
+    FOREIGN KEY (ID_BOLSISTA) REFERENCES Bolsista(ID_BOLSISTA) ON DELETE RESTRICT
+);
+
+
