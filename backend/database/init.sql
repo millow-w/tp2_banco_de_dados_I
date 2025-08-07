@@ -2,8 +2,10 @@
 -- Substitui { }  por ( ) em algumas criacoes de tabelas
 -- Adicionei CONSTRAINTS ID_NOME_TABELA para as chaves primarias compostas sempre com o nome da tabela separado por '_
 -- Consertei alguns nomes de atributos que estavam diferentes do modelo relacional e referencias a chaves estrangeiras
-
+-- Modifiquei AUTO_INCREMENT (MYSQL) PARA GENERATED ALWAYS AS IDENTITY (POSTGRES)
+-- Coloquei relacao departamentosetor antes de servidor
 -- Algumas outras observacoes coloquei em comentarios no codigo do lado dos atributos
+-- Rearranjei ordem das relacoes para nao ter erro
 
 -- Entidade Pessoa
 CREATE TABLE Pessoa (
@@ -34,6 +36,16 @@ CREATE TABLE PessoaLGBT (
     FOREIGN KEY (CPF) REFERENCES Pessoa(CPF) ON DELETE CASCADE
 );
 
+-- Entidade Setor
+CREATE TABLE DepartamentoSetor(
+	CODIGO INT PRIMARY KEY,
+	Nome VARCHAR(60) NOT NULL,
+	Localizacao VARCHAR(100) NOT NULL,
+	Telefone VARCHAR(20) NOT NULL,
+	Email VARCHAR (100) NOT NULL
+);
+
+
 -- Entidade Servidor
 CREATE TABLE Servidor (
     CPF VARCHAR(11) PRIMARY KEY,
@@ -43,6 +55,12 @@ CREATE TABLE Servidor (
     FOREIGN KEY (CodigoDepartamento) REFERENCES DepartamentoSetor(Codigo) ON DELETE RESTRICT
 );
 
+-- Entidade PCD
+CREATE TABLE PCD (
+	ID_PCD INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY 
+);
+
+
 -- Entidade Docente
 CREATE TABLE Docente (
     CPF VARCHAR(11) PRIMARY KEY,
@@ -50,6 +68,21 @@ CREATE TABLE Docente (
     ID_PCD INT,
     FOREIGN KEY (CPF) REFERENCES Servidor(CPF) ON DELETE RESTRICT,
     FOREIGN KEY (ID_PCD) REFERENCES PCD(ID_PCD) ON DELETE RESTRICT
+);
+
+-- Entidade Membro da Equipe
+CREATE TABLE MembroDaEquipe(
+    ID_MEMBRO INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    Categoria VARCHAR(50),
+    RegimeDeTrabalho VARCHAR(100) NOT NULL,
+    ID_COORDENADOR INT,
+    FOREIGN KEY (ID_COORDENADOR) REFERENCES MembroDaEquipe(ID_MEMBRO) ON DELETE RESTRICT
+);
+
+-- Entidade Cargo
+CREATE TABLE Cargo (
+	ID_CARGO INT PRIMARY KEY, 
+	Nome VARCHAR(60) NOT NULL
 );
 
 -- Entidade Técnico Administrativo
@@ -86,15 +119,6 @@ CREATE TABLE Aluno (
     FOREIGN KEY (ID_PCD) REFERENCES PCD(ID_PCD) ON DELETE RESTRICT
 );
 
--- Entidade Membro da Equipe
-CREATE TABLE MembroDaEquipe(
-    ID_MEMBRO INT PRIMARY KEY AUTO_INCREMENT,
-    Categoria VARCHAR(50)
-    RegimeDeTrabalho VARCHAR(100) NOT NULL,
-    ID_COORDENADOR INT,
-    FOREIGN KEY (ID_COORDENADOR) REFERENCES MembroDaEquipe(ID_MEMBRO) ON DELETE RESTRICT
-);
-
 -- Atributo Período de Vínculo Multivalorado de Membro da Equipe
 CREATE TABLE PeriodoDeVinculo(
     DataDeInicio DATE NOT NULL,
@@ -109,7 +133,7 @@ CREATE TABLE Bolsista(
     ID_BOLSISTA INT PRIMARY KEY,
     Salario MONEY NOT NULL,
     CargaHoraria INT,
-    FOREIGN KEY (ID_BOLSISTA) REFERENCES MembroDaEquipe(ID_MEMBRO) ON DELETE RESTRICT,
+    FOREIGN KEY (ID_BOLSISTA) REFERENCES MembroDaEquipe(ID_MEMBRO) ON DELETE RESTRICT
     -- CHECK (Salario > 0) 
 );
 
@@ -148,11 +172,6 @@ CREATE TABLE Estagiario(
 	Salario MONEY NOT NULL,
 	CargaHoraria INT, 
 	FOREIGN KEY (ID_ESTAGIARIO) REFERENCES MembroDaEquipe(ID_MEMBRO) ON DELETE RESTRICT 
-);
-
--- Entidade PCD
-CREATE TABLE PCD (
-	ID_PCD INT PRIMARY KEY AUTO_INCREMENT 
 );
 
 -- Entidade Deficiência
@@ -199,13 +218,13 @@ CREATE TABLE TecnologiaEmprestavel(
 
 -- Entidade Categoria Material
 CREATE TABLE CategoriaMaterial(
-    ID_CATEGORIA INT PRIMARY KEY AUTO_INCREMENT,
+    ID_CATEGORIA INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     TipoMaterial VARCHAR(100) NOT NULL
 );
 
 -- Entidade Material Acessível
 CREATE TABLE MaterialAcessivel(
-    ID_MATERIAL INT PRIMARY KEY AUTO_INCREMENT,
+    ID_MATERIAL INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     Titulo VARCHAR(255) NOT NULL,
     Formato VARCHAR(100) NOT NULL,
     Status VARCHAR(255) NOT NULL,
@@ -214,21 +233,6 @@ CREATE TABLE MaterialAcessivel(
     ID_BOLSISTA INT,
     FOREIGN KEY (ID_CATEGORIA) REFERENCES CategoriaMaterial(ID_CATEGORIA) ON DELETE RESTRICT,
     FOREIGN KEY (ID_BOLSISTA) REFERENCES BolsistaProducao(ID_BOLSISTA) ON DELETE RESTRICT
-);
-
--- Entidade Setor
-CREATE TABLE DepartamentoSetor(
-	CODIGO INT PRIMARY KEY,
-	Nome VARCHAR(60) NOT NULL,
-	Localizacao VARCHAR(100) NOT NULL,
-	Telefone VARCHAR(20) NOT NULL,
-	Email VARCHAR (100) NOT NULL
-);
-
--- Entidade Cargo
-CREATE TABLE Cargo (
-	ID INT PRIMARY KEY, 
-	Nome VARCHAR(60) NOT NULL
 );
 
 -- Entidade Curso
@@ -244,7 +248,7 @@ CREATE TABLE TabelaFuncoes(
 	ID_CARGO INT NOT NULL,
     Funcao VARCHAR(255), 
     CONSTRAINT ID_TABELA_FUNCOES PRIMARY KEY (ID_CARGO, Funcao), -- MODIFIQUEI NOME AQUI POIS JA EXISTIA UM ID_PERIODO ANTERIOR
-    FOREIGN KEY (ID_CARGO) REFERENCES Cargo(ID) ON DELETE RESTRICT  
+    FOREIGN KEY (ID_CARGO) REFERENCES Cargo(ID_CARGO) ON DELETE RESTRICT  
 );
 
 -- Relacionamento Matriculado Em
@@ -310,4 +314,3 @@ CREATE TABLE PrestaAssistencia (
     FOREIGN KEY (ID_ACAO) REFERENCES Acao(ID_ACAO) ON DELETE RESTRICT,
     FOREIGN KEY (ID_MEMBRO_CAIN) REFERENCES MembroDaEquipe(ID_MEMBRO) ON DELETE RESTRICT
 );
-
