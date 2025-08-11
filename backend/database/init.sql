@@ -1,14 +1,4 @@
--- Modifiquei nomes de tabelas para ficar igual do modelo relacional,
--- Substitui { }  por ( ) em algumas criacoes de tabelas
--- Adicionei CONSTRAINTS ID_NOME_TABELA para as chaves primarias compostas sempre com o nome da tabela separado por '_
--- Consertei alguns nomes de atributos que estavam diferentes do modelo relacional e referencias a chaves estrangeiras
--- Modifiquei AUTO_INCREMENT (MYSQL) PARA GENERATED ALWAYS AS IDENTITY (POSTGRES)
--- Coloquei relacao departamentosetor antes de servidor
--- Algumas outras observacoes coloquei em comentarios no codigo do lado dos atributos
-
-
--- Telas individuais para diferentes entidades -  crio Pessoa e finaliza. Depois quando vou cadastrar o servidor eu busco as pessoas cadastradas anteriormente. mesma coisa pro aluno
-
+-- Modificado AUTO_INCREMENT (MYSQL) PARA GENERATED ALWAYS AS IDENTITY (POSTGRES)
 
 -- Entidade Pessoa
 CREATE TABLE Pessoa (
@@ -56,9 +46,6 @@ CREATE TABLE Servidor (
     CodigoDepartamentoSetor INT NOT NULL,
     FOREIGN KEY (CPF) REFERENCES Pessoa(CPF) ON DELETE RESTRICT ON UPDATE RESTRICT,
     FOREIGN KEY (CodigoDepartamentoSetor) REFERENCES DepartamentoSetor(CODIGO) ON DELETE RESTRICT ON UPDATE CASCADE 
-
-    -- trigger para buscar o CPF Da pessoa em Servidor e verificar se ela é PCD.
-    -- se for, vai pegar o ID_PCD do PCD e colocar na tabela Aluno
 );
 
 -- Entidade PCD
@@ -122,9 +109,6 @@ CREATE TABLE Aluno (
     FOREIGN KEY (CPF) REFERENCES Pessoa(CPF) ON DELETE RESTRICT ON UPDATE RESTRICT,
     FOREIGN KEY (ID_MEMBRO) REFERENCES MembroDaEquipe(ID_MEMBRO) ON DELETE RESTRICT ON UPDATE RESTRICT,
     FOREIGN KEY (ID_PCD) REFERENCES PCD(ID_PCD) ON DELETE RESTRICT ON UPDATE RESTRICT
-
-    -- trigger para buscar o CPF Da pessoa em Servidor e verificar se ela é PCD.
-    -- se for, vai pegar o ID_PCD do PCD e colocar na tabela Aluno
 );
 
 -- Atributo Período de Vínculo Multivalorado de Membro da Equipe
@@ -150,7 +134,6 @@ CREATE TABLE Bolsista(
     Salario MONEY NOT NULL,
     CargaHoraria INT,
     FOREIGN KEY (ID_BOLSISTA) REFERENCES MembroDaEquipe(ID_MEMBRO) ON DELETE RESTRICT ON UPDATE RESTRICT
-    -- CHECK (Salario > 0) 
 );
 
 -- Entidade Bolsista de Produção
@@ -176,9 +159,9 @@ CREATE TABLE Relatorios(
 
 -- Atributo Horários Multivalorado do Bolsista de Inclusão
 CREATE TABLE Horarios(
-    ID_BOLSISTA INT NOT NULL,  -- ALTEREI O NOME DO ATRIBUTO PARA CONDIZER QUE O ID VEM DE BOLSISTA INCLUSAO
+    ID_BOLSISTA INT NOT NULL,  
     Horarios_Monitoria DATE NOT NULL,
-    CONSTRAINT ID_HORARIOS PRIMARY KEY (ID_BOLSISTA, Horarios_Monitoria), -- COLOQUEI OS DOIS ATRIBUTOS COMO CHAVE IGUAL NO MODELO RELACIONAL
+    CONSTRAINT ID_HORARIOS PRIMARY KEY (ID_BOLSISTA, Horarios_Monitoria), 
     FOREIGN KEY (ID_BOLSISTA) REFERENCES BolsistaInclusao(ID_BOLSISTA) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
@@ -203,14 +186,11 @@ CREATE TABLE Acao(
     Descricao VARCHAR(500)
 );
 
--- ################ NÃO REVISADO ################
-
--- Entidade Categoria Tecnologia (MOVI PARA ANTES DE TECNOLOGIA PORQUE ELA TEM REFERENCIA EM TECNOLOGIA)
+-- Entidade Categoria Tecnologia 
 CREATE TABLE CategoriaTecnologia(
     ID_CATEGORIA INT PRIMARY KEY,
     Tipo_Categoria VARCHAR(50) NOT NULL
 );
-
 
 -- Entidade Tecnologia
 CREATE TABLE Tecnologia(
@@ -223,12 +203,11 @@ CREATE TABLE Tecnologia(
     FOREIGN KEY (ID_Categoria) REFERENCES CategoriaTecnologia(ID_CATEGORIA) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
-
+-- Entidade Tecnologia Emprestável
 CREATE TABLE TecnologiaEmprestavel(
     ID_TECNOLOGIA INT PRIMARY KEY,
     STATUS BOOLEAN NOT NULL,
     FOREIGN KEY (ID_TECNOLOGIA) REFERENCES Tecnologia(ID_TECNOLOGIA) ON DELETE RESTRICT ON UPDATE CASCADE
-    -- CHECK (STATUS IN ('Disponível', 'Indisponível')) - NAO SEI SE ISSO FUNCIONA
 );
 
 
@@ -263,7 +242,7 @@ CREATE TABLE Curso (
 CREATE TABLE TabelaFuncoes(
 	ID_CARGO INT NOT NULL,
     Funcao VARCHAR(255), 
-    CONSTRAINT ID_TABELA_FUNCOES PRIMARY KEY (ID_CARGO, Funcao), -- MODIFIQUEI NOME AQUI POIS JA EXISTIA UM ID_PERIODO ANTERIOR
+    CONSTRAINT ID_TABELA_FUNCOES PRIMARY KEY (ID_CARGO, Funcao), 
     FOREIGN KEY (ID_CARGO) REFERENCES Cargo(ID_CARGO) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
@@ -287,7 +266,7 @@ CREATE TABLE EmprestimoMaterial (
     DataDevolucao DATE,
     DevolucaoEstimada DATE,
 
-    CONSTRAINT ID_EMPRESTIMO_MATERIAL PRIMARY KEY (ID_PCD, ID_MATERIAL), -- Verificar no modelo relacional e diagrama quais sao as chaves daqui
+    CONSTRAINT ID_EMPRESTIMO_MATERIAL PRIMARY KEY (ID_PCD, ID_MATERIAL), 
 
     FOREIGN KEY (ID_PCD) REFERENCES PCD(ID_PCD) ON DELETE RESTRICT ON UPDATE RESTRICT,
     FOREIGN KEY (ID_MATERIAL) REFERENCES TecnologiaEmprestavel(ID_TECNOLOGIA) ON DELETE RESTRICT ON UPDATE CASCADE
